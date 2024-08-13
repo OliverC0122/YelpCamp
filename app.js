@@ -7,13 +7,14 @@ const ejsMate = require('ejs-mate');
 //packages for handling errors.
 const catchAsync = require('./utils/catchAsync');
 const ExpressError = require('./utils/ExpressError');
-const joi = require('joi');
-const {campgroundSchema} = require('./schemas');
+const {campgroundSchema, reviewSchema} = require('./schemas');
 
 
 // setting up the mongo instance.
 const mongoose = require('mongoose');
 const Campground = require('./models/campground');
+const Review = require("./models/review");
+
 const { deserialize } = require('v8');
 mongoose.connect('mongodb://127.0.0.1:27017/yelp-camp');
 
@@ -36,6 +37,7 @@ app.use(methodOverride('_method'));
 //defining a middleware for sever side validation.
 const validateCampground = (req,res,next) => {
     
+    // validate using the mongo schema.
     const {error} = campgroundSchema.validate(req.body);
 
     if (error){
@@ -45,6 +47,17 @@ const validateCampground = (req,res,next) => {
         next();
     }
     
+}
+
+const validateReview = (req,res, next) => {
+    const {error} = reviewSchema.validate(req.body);
+
+    if (error){
+        const msg = error.details.map(element => element.message).join(',');
+        throw new ExpressError(msg,400);
+    }else{
+        next();
+    }
 }
 
 //setting up a statci port.
@@ -77,7 +90,7 @@ app.get('/campgrounds/new', catchAsync(async (req, res) => {
 
 // handling the get request to display the details for a given campground.
 app.get('/campgrounds/:id', catchAsync(async (req, res) => {
-    const campground = await Campground.findById(req.params.id);
+    const campground = await Campground.findById(req.params.id).populate('reviews');
     res.render('campgrounds/show',{campground});
 }))
 
@@ -99,6 +112,31 @@ app.delete('/campgrounds/:id', catchAsync(async (req,res) => {
     const { id } = req.params;
     await Campground.findByIdAndDelete(id);
     res.redirect('/campgrounds');    
+}))
+
+// ----------------------------the apis for reviews --------------------------------------------
+app.post("/campgrounds/:id/reviews", validateReview ,catchAsync(async (req, res) => {
+    const {id} = req.params;
+    const campground = await Campground.findById(id);
+    const review = new Review(req.body.review); 
+
+    campground.reviews.push(review);
+    await review.save();
+    await campground.save();
+
+    res.redirect(`/campgrounds/${campground._id}`);
+
+}));
+
+// deleting a review
+app.delete('/campgrounds/:id/reviews/:reviewId',catchAsync(async (req,res) => {
+    const {id,reviewId} = req.params;
+    Campground.findByIdAndUpdate(id,{
+        $pull: {reviews: reviewId}
+    });
+    await Review.findByIdAndDelete(reviewId);
+    res.redirect(`/campgrounds/${id}`);
+
 }))
 
 //handling the not found error.
