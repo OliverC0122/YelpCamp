@@ -9,7 +9,7 @@ const campgroundSchema = joi.object({
     }).required()
 });
 
-module.exports = campgroundSchema;
+module.exports.campgroundSchema = campgroundSchema;
 
 module.exports.reviewSchema = joi.object({
     review: joi.object({
