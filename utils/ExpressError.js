@@ -1,4 +1,3 @@
-const { model } = require("mongoose");
 
 class ExpressError extends Error {
     constructor(message,statusCode){
