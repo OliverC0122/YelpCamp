@@ -6,7 +6,7 @@
         Edit Campground
     </h1>
     <div class="col-6 offset-3">
-        <form action="/campgrounds" method="POST" novalidate class="validated-form">
+        <form action="/campgrounds/<%= campground._id %>?_method=PUT" method="POST" novalidate class="validated-form">
             <div class="mb-3">
                 <label class="form-label" for="title"> Title </label>
                 <input class="form-control" type="text" id="title"
@@ -45,7 +45,7 @@
                     <input id="price" type="text" class="form-control" 
                         placeholder="0.00" aria-label="Username" 
                         aria-describedby="price-label"  required
-                        value="<%=campground.pricea %>"
+                        value="<%= campground.price %>"
                         name="campground[price]">
                     <div class="valid-feedback">
                         Looks good!

@@ -46,6 +46,7 @@ router.post('/login', storeReturnTo,
 
     } ), (req,res) => {
         req.flash('success', 'Welcome back!');
+        // if the returnTo state is not get request, it will lead to a page not found error.
         const redirectUrl = res.locals.returnTo || '/campgrounds'; 
         res.redirect(redirectUrl);
 });
