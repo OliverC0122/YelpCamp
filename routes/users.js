@@ -8,59 +8,29 @@ const { storeReturnTo } = require('../middleware');
 // utils for handling server side errors.
 const catchAsync = require('../utils/catchAsync');
 
+const {
+    renderRegisterForm,
+    registerUser,
+    renderLoginForm,
+    loginUser,
+    logoutUser
+} = require('../controllers/users');
+
+router.route('/register')
+    .get(renderRegisterForm)
+    .post(catchAsync(registerUser));
+
+router.route('/login')
+    .get(renderLoginForm)
+    .post(storeReturnTo, 
+        passport.authenticate('local',
+        {
+            failureFlash: true,
+            failureRedirect: '/login',
+    
+        }), loginUser);
 
 
-router.get('/register',(req,res) => {
-    res.render('users/register');
-});
-
-router.post('/register', catchAsync( async (req,res, next) => {
-
-    try{
-        const {username, email, password} = req.body;
-        const user = new User({email,username});
-        const registeredUser =  await User.register(user,password);
-
-        req.login(registeredUser, (err) => {
-            if (err) return next(err);
-            req.flash('success','Welcome to Yelp Camp!');
-            res.redirect('/campgrounds');
-        })
-        
-    } catch (e) {
-        req.flash('error',e.message);
-        res.redirect('/register');
-    }
-
-}));
-
-router.get('/login', (req,res) => {
-    res.render('users/login');
-})
-
-router.post('/login', storeReturnTo, 
-    passport.authenticate('local',
-    {
-        failureFlash: true,
-        failureRedirect: '/login',
-
-    } ), (req,res) => {
-        req.flash('success', 'Welcome back!');
-        // if the returnTo state is not get request, it will lead to a page not found error.
-        const redirectUrl = res.locals.returnTo || '/campgrounds'; 
-        res.redirect(redirectUrl);
-});
-
-router.get('/logout',(req,res,next)=> {
-    req.logOut((err)=>
-    {
-        if(err) return next(err);
-    });
-    req.flash('success','Successfully logout!');
-    res.redirect('/campgrounds');
-});
-
-
-
+router.route('/logout').get(logoutUser);
 
 module.exports = router;
