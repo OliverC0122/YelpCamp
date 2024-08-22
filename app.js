@@ -1,3 +1,8 @@
+//setting up the env variables.
+if (process.env.NODE_ENV !== 'production'){
+    require('dotenv').config();
+}
+
 //required packages for the resful apis
 const express = require('express');
 const path = require("path");
