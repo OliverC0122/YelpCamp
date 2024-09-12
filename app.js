@@ -8,6 +8,7 @@ const express = require('express');
 const path = require("path");
 const methodOverride = require('method-override');
 const ejsMate = require('ejs-mate');
+
 const session = require('express-session');
 const flash = require('connect-flash');
 const User = require('./models/user');
@@ -23,6 +24,7 @@ const ExpressError = require('./utils/ExpressError');
 
 // setting up the mongo instance.
 const mongoose = require('mongoose');
+const Campground = require('./models/campground');
 
 mongoose.connect('mongodb://127.0.0.1:27017/yelp-camp');
 
@@ -85,8 +87,9 @@ app.use('/campgrounds/:id/reviews',reveiwsRoutes);
 
 
 // the home page.
-app.get("/",(req,res)=>{
-    res.render("home");
+app.get("/", async (req,res)=>{
+    const campgrounds = await Campground.find({});
+    res.render("campgrounds/index",{campgrounds});
 });
 
 
