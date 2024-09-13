@@ -93,7 +93,7 @@ passport.deserializeUser(User.deserializeUser());
 
 
 //setting up a static port.
-const port = 8080;
+const port = process.env.PORT || 3000;
 
 app.use((req, res , next) => {
     res.locals.currentUser = req.user;
