@@ -21,12 +21,17 @@ const reveiwsRoutes = require("./routes/reviews");
 const usersRoutes = require('./routes/users');
 // server side 
 const ExpressError = require('./utils/ExpressError');
+const mongoSanitize = require('express-mongo-sanitize');
 
+const MongoStore = require("connect-mongo");
+const dbUrl = process.env.DB_URL;
+// const dbUrl = 'mongodb://127.0.0.1:27017/yelp-camp';    
 // setting up the mongo instance.
 const mongoose = require('mongoose');
-const Campground = require('./models/campground');
+//'mongodb://127.0.0.1:27017/yelp-camp'
 
-mongoose.connect('mongodb://127.0.0.1:27017/yelp-camp');
+
+mongoose.connect(dbUrl);
 
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "Connection error:"));
@@ -45,18 +50,34 @@ app.use(express.urlencoded({extended: true}));
 //for override the post req from the html forms.
 app.use(methodOverride('_method'));
 app.use(express.static(path.join(__dirname,'public')));
+app.use(mongoSanitize());
+
+const store = MongoStore.create({
+    mongoUrl: dbUrl,
+    touchAfter: 24 * 60 * 60,
+    crypto: {
+        secret: 'oli0.0'
+    }
+});
+
+store.on("error", function(e) {
+    console.log("Session Store Error:",e);
+})
 
 // setting the express-session.
 const sessionConfig = {
+    store,
+    name: 'yc-session',
     secret: 'oli0.0',
     resave: false,
     saveUninitialized: true,
     cookie: {
-        HttpOnly: true,
+        httpOnly: true,
         expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
         maxAge: 1000 * 60 * 60 * 24 * 7
     }
 };
+
 app.use(session(sessionConfig));
 app.use(flash());
 
@@ -88,8 +109,7 @@ app.use('/campgrounds/:id/reviews',reveiwsRoutes);
 
 // the home page.
 app.get("/", async (req,res)=>{
-    const campgrounds = await Campground.find({});
-    res.render("campgrounds/index",{campgrounds});
+    res.render('home');
 });
 
 

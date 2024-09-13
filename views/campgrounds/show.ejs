@@ -1,10 +1,8 @@
 <% layout('/layouts/boilerplate') %>
 <link rel="stylesheet" href="/stylesheets/stars.css">
-
-
 <div class="row">
-    <div class="col-6 ">
-        <div id='map' style='width: 400px; height: 300px;'></div>
+    <div class="col-6">
+        
         <div id="carouselExampleInterval" class="carousel slide" data-bs-ride="carousel">
             <div class="carousel-inner">
                 <% campground.images.forEach((img,i) => { %>
@@ -36,7 +34,8 @@
               <li class="list-group-item text-muted"> By <%= campground.author.username %> </li>
               <li class="list-group-item">$ <%= campground.price %> / night</li>
             </ul>
-
+            
+            
             <% if ( currentUser && campground.author.equals(currentUser._id)) {%>
             <div class="card-body">
                 <a class="card-link btn btn-info" href="/campgrounds/<%= campground._id %>/edit">Edit</a>
@@ -53,6 +52,7 @@
     </div>
 
     <div class="col-6">
+        <div id='map'></div>
         <% if (currentUser) { %>
         <h2>Leave a Review</h2>
         <form action="/campgrounds/<%= campground._id %>/reviews"
