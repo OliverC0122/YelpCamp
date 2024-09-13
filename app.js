@@ -52,11 +52,13 @@ app.use(methodOverride('_method'));
 app.use(express.static(path.join(__dirname,'public')));
 app.use(mongoSanitize());
 
+const secret = process.env.SECRET;
+
 const store = MongoStore.create({
     mongoUrl: dbUrl,
     touchAfter: 24 * 60 * 60,
     crypto: {
-        secret: 'oli0.0'
+        secret
     }
 });
 
